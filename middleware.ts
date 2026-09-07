@@ -11,7 +11,7 @@ type CookieToSet = {
 
 export async function middleware(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!url || !key) return NextResponse.next();
 
@@ -30,9 +30,8 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getClaims();
+  const isAuthenticated = !error && Boolean(data?.claims?.sub);
 
   const protectedRoute = protectedPrefixes.some(
     (prefix) =>
@@ -40,7 +39,7 @@ export async function middleware(request: NextRequest) {
       request.nextUrl.pathname.startsWith(`${prefix}/`)
   );
 
-  if (protectedRoute && !user) {
+  if (protectedRoute && !isAuthenticated) {
     const login = request.nextUrl.clone();
     login.pathname = '/login';
     login.searchParams.set('next', request.nextUrl.pathname);
@@ -48,7 +47,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (
-    user &&
+    isAuthenticated &&
     (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')
   ) {
     const dashboard = request.nextUrl.clone();
