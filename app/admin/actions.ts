@@ -7,10 +7,7 @@ export async function setUserRole(formData: FormData) {
   const { supabase } = await requireAdmin();
   const targetUser = String(formData.get('user_id') || '');
   const role = String(formData.get('role') || '');
-  const { error } = await supabase.rpc('admin_set_user_role', {
-    target_user: targetUser,
-    new_role: role,
-  });
+  const { error } = await supabase.from('profiles').update({ role, updated_at: new Date().toISOString() }).eq('id', targetUser);
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
 }
@@ -18,11 +15,8 @@ export async function setUserRole(formData: FormData) {
 export async function setKycStatus(formData: FormData) {
   const { supabase } = await requireAdmin();
   const targetUser = String(formData.get('user_id') || '');
-  const status = String(formData.get('kyc_status') || '');
-  const { error } = await supabase.rpc('admin_set_kyc_status', {
-    target_user: targetUser,
-    new_status: status,
-  });
+  const kyc_status = String(formData.get('kyc_status') || '');
+  const { error } = await supabase.from('profiles').update({ kyc_status, updated_at: new Date().toISOString() }).eq('id', targetUser);
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
 }
