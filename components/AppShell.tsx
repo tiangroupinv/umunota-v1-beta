@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import {useEffect,useState} from 'react';
-import {Bell, CircleUserRound, Clock3, CreditCard, Home, MapPin, MessageSquareText, Search, ShieldCheck, Sparkles, UsersRound, ClipboardList, Plus, ChevronDown} from 'lucide-react';
+import {Bell, CircleUserRound, Clock3, CreditCard, Home, MapPin, MessageSquareText, Search, ShieldCheck, UsersRound, ClipboardList, Plus, ChevronDown} from 'lucide-react';
 import {createClient} from '@/lib/supabase';
 import InstallBanner from './InstallBanner';
 
