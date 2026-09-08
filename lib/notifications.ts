@@ -1,4 +1,4 @@
-import webpush from 'web-push';
+import * as webpush from 'web-push';
 import {createAdminSupabaseClient} from './supabase-admin';
 
 type Category='task'|'community'|'general';
@@ -9,8 +9,8 @@ export async function notifyUser(userId:string,{type='general',title,body,href,c
  if(!categoryEnabled)return;
  await admin.from('notifications').insert({user_id:userId,type,title,body,href:href||null});
  if(!pref?.push_notifications_enabled)return;
- const publicKey=process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,privateKey=process.env.VAPID_PRIVATE_KEY,subject=process.env.VAPID_SUBJECT||'mailto:support@umunota.rw';
- if(!publicKey||!privateKey)return;
+ const publicKey=process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,privateKey=process.env.VAPID_PRIVATE_KEY,subject=process.env.VAPID_SUBJECT;
+ if(!publicKey||!privateKey||!subject)return;
  webpush.setVapidDetails(subject,publicKey,privateKey);
  const {data:subs}=await admin.from('push_subscriptions').select('id,endpoint,p256dh,auth').eq('user_id',userId);
  const payload=JSON.stringify({title,body,href:href||'/dashboard',icon:'/umunota-icon.svg',badge:'/umunota-icon.svg'});
