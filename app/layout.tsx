@@ -5,6 +5,7 @@ import './launch.css';
 import './business.css';
 import './community.css';
 import './platform.css';
+import './settings.css';
 import type {Metadata} from 'next';
 import Providers from './providers';
 import {LanguageProvider} from '@/components/LanguageProvider';
