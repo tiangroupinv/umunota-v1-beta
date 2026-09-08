@@ -5,6 +5,16 @@ import {createAdminSupabaseClient} from '@/lib/supabase-admin';
 
 const createSchema=z.object({businessName:z.string().min(2).max(120),industry:z.string().max(120).optional(),location:z.string().max(160).optional(),contactName:z.string().max(120).optional(),contactEmail:z.string().email().optional().or(z.literal('')),contactPhone:z.string().max(40).optional()});
 
+export async function GET(){
+ const supabase=await createServerSupabaseClient();const {data:claims}=await supabase.auth.getClaims();const userId=claims?.claims?.sub;
+ if(!userId)return NextResponse.json({error:'Sign in required'},{status:401});
+ const {data:memberships}=await supabase.from('business_members').select('business_id,role').eq('user_id',userId).limit(10);
+ const ids=(memberships||[]).map(m=>m.business_id);
+ const {data:businesses}=ids.length?await supabase.from('business_plans').select('*').in('id',ids):{data:[]};
+ const admin=createAdminSupabaseClient();const {data:settings}=await admin.from('revenue_settings').select('business_enabled,business_monthly_price_rwf').eq('id',1).single();
+ return NextResponse.json({businesses:businesses||[],memberships:memberships||[],settings:settings||null});
+}
+
 export async function POST(req:Request){
  const parsed=createSchema.safeParse(await req.json());
  if(!parsed.success)return NextResponse.json({error:'Invalid business details',details:parsed.error.flatten()},{status:400});
