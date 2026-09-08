@@ -6,12 +6,13 @@ import './business.css';
 import './community.css';
 import './platform.css';
 import './settings.css';
+import './brand.css';
 import type {Metadata} from 'next';
 import Providers from './providers';
 import {LanguageProvider} from '@/components/LanguageProvider';
 
 export const metadata:Metadata={
-  title:'UMUNOTA — People. Time. Solutions.',
+  title:'UMUNOTA — Tasks. People. A Better Tomorrow.',
   description:'Verified everyday help marketplace in Rwanda — a Tian Group Innovation Ltd project.',
   manifest:'/manifest.webmanifest',
   themeColor:'#090a0c',
