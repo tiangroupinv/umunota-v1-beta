@@ -38,9 +38,28 @@ export async function createDiditSession(input: {
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data?.detail || 'Unable to create verification session');
+    const detail = typeof data?.detail === 'string' ? data.detail : 'Unable to create verification session';
+    throw new Error(detail);
   }
+
+  if (typeof data?.session_id !== 'string' || typeof data?.url !== 'string') {
+    throw new Error('Didit returned an invalid verification session');
+  }
+
   return data as { session_id: string; url: string; status: string };
+}
+
+function shortenFloats(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(shortenFloats);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, child]) => [key, shortenFloats(child)])
+    );
+  }
+  if (typeof value === 'number' && !Number.isInteger(value) && value % 1 === 0) {
+    return Math.trunc(value);
+  }
+  return value;
 }
 
 function sortKeys(value: unknown): unknown {
@@ -56,17 +75,40 @@ function sortKeys(value: unknown): unknown {
   return value;
 }
 
-export function verifyDiditWebhook(body: unknown, signature: string | null, timestamp: string | null) {
-  const secret = process.env.DIDIT_WEBHOOK_SECRET;
-  if (!secret || !signature || !timestamp) return false;
-
-  const incoming = Number(timestamp);
-  const now = Math.floor(Date.now() / 1000);
-  if (!Number.isFinite(incoming) || Math.abs(now - incoming) > 300) return false;
-
-  const canonical = JSON.stringify(sortKeys(body));
-  const expected = crypto.createHmac('sha256', secret).update(canonical, 'utf8').digest('hex');
+function safeEqualHex(expected: string, received: string | null) {
+  if (!received) return false;
   const a = Buffer.from(expected, 'utf8');
-  const b = Buffer.from(signature, 'utf8');
+  const b = Buffer.from(received, 'utf8');
   return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+function freshTimestamp(timestamp: string | null) {
+  if (!timestamp) return false;
+  const incoming = Number.parseInt(timestamp, 10);
+  const now = Math.floor(Date.now() / 1000);
+  return Number.isFinite(incoming) && Math.abs(now - incoming) <= 300;
+}
+
+export function verifyDiditWebhook(input: {
+  rawBody: string;
+  body: unknown;
+  signatureV2: string | null;
+  signatureRaw: string | null;
+  timestamp: string | null;
+}) {
+  const secret = process.env.DIDIT_WEBHOOK_SECRET;
+  if (!secret || !freshTimestamp(input.timestamp)) return false;
+
+  if (input.signatureV2) {
+    const canonical = JSON.stringify(sortKeys(shortenFloats(input.body)));
+    const expected = crypto.createHmac('sha256', secret).update(canonical, 'utf8').digest('hex');
+    if (safeEqualHex(expected, input.signatureV2)) return true;
+  }
+
+  if (input.signatureRaw) {
+    const expected = crypto.createHmac('sha256', secret).update(input.rawBody, 'utf8').digest('hex');
+    if (safeEqualHex(expected, input.signatureRaw)) return true;
+  }
+
+  return false;
 }
