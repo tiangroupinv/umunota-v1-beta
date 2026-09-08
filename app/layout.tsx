@@ -1,11 +1,15 @@
 import './globals.css';
 import './marketing-admin.css';
+import './production.css';
 import type {Metadata} from 'next';
 import Providers from './providers';
 
 export const metadata:Metadata={
   title:'UMUNOTA — People. Time. Solutions.',
-  description:'Trusted everyday help in Rwanda',
+  description:'Verified everyday help marketplace in Rwanda',
+  manifest:'/manifest.webmanifest',
+  themeColor:'#090a0c',
+  icons:{icon:'/umunota-icon.svg',apple:'/umunota-icon.svg'},
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
