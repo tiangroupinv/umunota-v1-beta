@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const protectedPrefixes = ['/dashboard', '/tasks', '/runners', '/payments', '/community', '/kyc', '/profile', '/business', '/admin'];
+const protectedPrefixes = ['/dashboard', '/tasks', '/runners', '/payments', '/community', '/kyc', '/profile', '/settings', '/business', '/admin'];
 
 type CookieToSet = {name:string;value:string;options?:Parameters<NextResponse['cookies']['set']>[2]};
 
