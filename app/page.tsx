@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import LanguageMenu from '@/components/LanguageMenu';
 import {BadgeCheck, Box, CalendarClock, Clock3, CreditCard, FileCheck2, MapPin, MessageSquareText, PackageCheck, Printer, ShieldCheck, ShoppingBasket, Smartphone, UserRoundCheck, UsersRound, Wrench, WashingMachine} from 'lucide-react';
 
 const services=[
@@ -22,7 +23,7 @@ const audiences=[
 ];
 
 export default function Page(){return <main className="landing">
-  <nav className="landingNav"><Link className="landingBrand simpleLandingBrand" href="/"><Clock3 size={24}/><b>UMUNOTA</b></Link><div className="landingLinks"><a href="#tasks">Task examples</a><a href="#services">Services</a><a href="#how">How it works</a><a href="#trust">Trust</a></div><div className="landingActions"><Link href="/login">Log in</Link><Link className="btn btn-gold" href="/signup"><Clock3 size={16}/> Get started</Link></div></nav>
+  <nav className="landingNav"><Link className="landingBrand simpleLandingBrand" href="/"><Clock3 size={24}/><b>UMUNOTA</b></Link><div className="landingLinks"><a href="#tasks">Task examples</a><a href="#services">Services</a><a href="#how">How it works</a><a href="#trust">Trust</a></div><div className="landingActions"><LanguageMenu/><Link href="/login">Log in</Link><Link className="btn btn-gold" href="/signup"><Clock3 size={16}/> Get started</Link></div></nav>
 
   <section className="landingHero"><div className="landingHeroCopy"><span className="landingPill">PEOPLE · TIME · SOLUTIONS</span><h1>Everyday help,<br/><span className="gold">organized around trust.</span></h1><p>UMUNOTA is Rwanda’s local task marketplace for the small jobs that take your time: shopping, pickups, repair drop-offs, document collection, laundry errands and other safe everyday tasks.</p><div className="landingCtas"><Link className="btn btn-gold" href="/signup"><Clock3 size={17}/> Post your first task</Link><Link className="btn btn-dark" href="/login">Explore as a runner</Link></div><div className="landingTrust"><span><BadgeCheck size={15}/> Verified marketplace access</span><span><ShieldCheck size={15}/> Tracked task flow</span><span><PackageCheck size={15}/> Proof and ratings</span></div></div><div className="landingVisual landingVisualClean"><div className="landingClockWordmark"><Clock3 size={70}/><strong>UMUNOTA</strong><small>People. Time. Solutions.</small></div><div className="floatingTask one"><b>Market pickup</b><span>18,500 RWF</span><small>Runner matching</small></div><div className="floatingTask two"><b>Print & deliver</b><span>4,500 RWF</span><small>Scheduled for tomorrow</small></div><div className="floatingTask three"><b>Repair errand</b><span>7,000 RWF</span><small>Verified runner required</small></div></div></section>
 
@@ -42,5 +43,5 @@ export default function Page(){return <main className="landing">
 
   <section className="landingSection landingFinalCta"><Clock3 size={42}/><div><span className="eyebrow">START WITH ONE TASK</span><h2>What would you get done if you had another pair of hands?</h2><p>Create your UMUNOTA account, verify your identity and post a clear task when you are ready.</p></div><Link className="btn btn-gold" href="/signup">Get started</Link></section>
 
-  <footer className="landingFooter"><div><Link className="landingBrand simpleLandingBrand" href="/"><Clock3 size={22}/><b>UMUNOTA</b></Link><p>People. Time. Solutions.</p></div><div><Link href="/login">Log in</Link><Link href="/signup">Create account</Link><Link href="/community">Community</Link><Link href="/kyc">Trust center</Link></div><small>© 2026 UMUNOTA. Safe, legal everyday tasks only.</small></footer>
+  <footer className="landingFooter"><div><Link className="landingBrand simpleLandingBrand" href="/"><Clock3 size={22}/><b>UMUNOTA</b></Link><p>People. Time. Solutions.</p><small>A project of Tian Group Innovation Ltd.</small></div><div><Link href="/login">Log in</Link><Link href="/signup">Create account</Link><Link href="/community">Community</Link><Link href="/legal">Legal & Safety</Link><Link href="/tian">Tian Group projects</Link></div><small>© 2026 Tian Group Innovation Ltd / UMUNOTA. Safe, legal everyday tasks only.</small></footer>
 </main>}
