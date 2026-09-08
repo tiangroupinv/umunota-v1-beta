@@ -2,10 +2,30 @@ import Link from 'next/link';
 import { requireAdmin } from '../../lib/admin';
 import { deletePost, setKycStatus, setPaymentStatus, setTaskStatus, setUserRole } from './actions';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const taskStatuses=['posted','funded','accepted','in_progress','submitted','payment_requested','disputed','completed','cancelled'];
 const paymentStatuses=['pending','authorized','requested','released','refunded','disputed','failed'];
 
 export default async function AdminPage(){
+  const hasSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  );
+
+  if (!hasSupabase) {
+    return <main className="adminSetupPage">
+      <section className="adminSetupCard">
+        <span className="eyebrow">ADMIN SETUP REQUIRED</span>
+        <h1>Connect production Supabase</h1>
+        <p>The UMUNOTA site is running, but the admin console needs the production Supabase environment variables configured in Vercel.</p>
+        <div className="notice">Add <b>NEXT_PUBLIC_SUPABASE_URL</b> and <b>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</b> to the Vercel Production environment, then redeploy.</div>
+        <div className="heroActions"><Link className="btn btn-gold" href="/">Open landing page</Link><Link className="btn btn-dark" href="/dashboard">Open demo dashboard</Link></div>
+      </section>
+    </main>;
+  }
+
   const {supabase,profile}=await requireAdmin();
   const [profilesRes,tasksRes,paymentsRes,postsRes]=await Promise.all([
     supabase.from('profiles').select('id,full_name,username,phone,role,kyc_status,rating,created_at').order('created_at',{ascending:false}).limit(20),
