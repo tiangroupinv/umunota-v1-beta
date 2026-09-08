@@ -1,2 +1,3 @@
 'use client';
-export default function Providers({children}:{children:React.ReactNode}){return <>{children}</>}
+import AutoTranslate from '@/components/AutoTranslate';
+export default function Providers({children}:{children:React.ReactNode}){return <><AutoTranslate/>{children}</>}
