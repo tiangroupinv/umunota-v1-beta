@@ -1,0 +1,12 @@
+{
+  "name": "UMUNOTA",
+  "short_name": "UMUNOTA",
+  "description": "Verified everyday help marketplace in Rwanda",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#090a0c",
+  "theme_color": "#090a0c",
+  "icons": [
+    {"src":"/umunota-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
