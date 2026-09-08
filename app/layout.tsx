@@ -2,6 +2,7 @@ import './globals.css';
 import './marketing-admin.css';
 import './production.css';
 import './launch.css';
+import './business.css';
 import type {Metadata} from 'next';
 import Providers from './providers';
 
