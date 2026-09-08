@@ -6,7 +6,8 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate:vapid": "web-push generate-vapid-keys"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
