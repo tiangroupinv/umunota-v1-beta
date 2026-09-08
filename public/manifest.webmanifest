@@ -1,7 +1,7 @@
 {
-  "name": "UMUNOTA",
+  "name": "UMUNOTA — Tasks. People. A Better Tomorrow.",
   "short_name": "UMUNOTA",
-  "description": "Verified everyday help marketplace in Rwanda",
+  "description": "UMUNOTA verified everyday help marketplace in Rwanda — Tasks. People. A Better Tomorrow.",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#090a0c",
