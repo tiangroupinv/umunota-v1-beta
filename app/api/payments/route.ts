@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import {z} from 'zod';
 import {isPaypackConfigured,paypackCashIn,paypackCashOut,paypackFindTransaction} from '@/lib/paypack';
 import {createServerSupabaseClient} from '@/lib/supabase-server';
+import {createAdminSupabaseClient} from '@/lib/supabase-admin';
 
 const phoneSchema=z.string().regex(/^07\d{8}$/,'Use a Rwanda mobile number like 078xxxxxxx');
 const schema=z.discriminatedUnion('action',[
@@ -15,6 +16,7 @@ export async function POST(req:Request){
  if(!isPaypackConfigured())return NextResponse.json({error:'Paypack is not configured',required:['PAYPACK_CLIENT_ID','PAYPACK_CLIENT_SECRET']},{status:503});
  const supabase=await createServerSupabaseClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return NextResponse.json({error:'Sign in required'},{status:401});
  const {data:profile}=await supabase.from('profiles').select('kyc_status').eq('id',user.id).single();if(profile?.kyc_status!=='verified')return NextResponse.json({error:'Identity verification required',code:'KYC_REQUIRED'},{status:403});
+ const admin=createAdminSupabaseClient();
  try{
   if(parsed.data.action==='find'){
     const {data:payment}=await supabase.from('payments').select('provider_reference,customer_id,runner_id').eq('provider_reference',parsed.data.ref).single();
@@ -28,9 +30,11 @@ export async function POST(req:Request){
   const idempotencyKey=`${task.id.replace(/-/g,'').slice(0,20)}${action}`.slice(0,32);
   const transaction=action==='cashin'?await paypackCashIn({amount:task.budget_rwf,phone:parsed.data.phone,idempotencyKey}):await paypackCashOut({amount:task.budget_rwf,phone:parsed.data.phone,idempotencyKey});
   if(action==='cashin'){
-    const {error}=await supabase.from('payments').upsert({task_id:task.id,customer_id:task.customer_id,runner_id:task.runner_id,amount_rwf:task.budget_rwf,status:transaction.status==='successful'?'authorized':'pending',provider:'paypack',provider_reference:transaction.ref},{onConflict:'task_id'});if(error)return NextResponse.json({error:error.message},{status:400});
+    const {error}=await admin.from('payments').upsert({task_id:task.id,customer_id:task.customer_id,runner_id:task.runner_id,amount_rwf:task.budget_rwf,status:transaction.status==='successful'?'authorized':'pending',provider:'paypack',provider_reference:transaction.ref},{onConflict:'task_id'});if(error)return NextResponse.json({error:error.message},{status:400});
+    if(transaction.status==='successful'){await admin.from('tasks').update({status:'funded'}).eq('id',task.id);await admin.from('task_events').insert({task_id:task.id,actor_id:user.id,event_type:'task_funded',message:'Paypack confirmed customer funding'});}
   }else{
-    const {error}=await supabase.from('payments').update({runner_id:task.runner_id,status:transaction.status==='successful'?'released':'requested',provider:'paypack',provider_reference:transaction.ref,updated_at:new Date().toISOString()}).eq('task_id',task.id);if(error)return NextResponse.json({error:error.message},{status:400});
+    const {error}=await admin.from('payments').update({runner_id:task.runner_id,status:transaction.status==='successful'?'released':'requested',provider:'paypack',provider_reference:transaction.ref,updated_at:new Date().toISOString()}).eq('task_id',task.id);if(error)return NextResponse.json({error:error.message},{status:400});
+    if(transaction.status==='successful'){await admin.from('tasks').update({status:'paid'}).eq('id',task.id);await admin.from('task_events').insert({task_id:task.id,actor_id:user.id,event_type:'payment_released',message:'Paypack confirmed runner payout'});}
   }
   return NextResponse.json({ok:true,provider:'paypack',mobileNetwork:transaction.provider??'detected-by-paypack',transaction});
  }catch(error){return NextResponse.json({error:error instanceof Error?error.message:'Payment provider request failed'},{status:502})}
