@@ -12,7 +12,10 @@ const schema = z.object({
   dueAt: z.string().datetime(),
   proofRequirement: z.string().min(2).max(120),
   businessId: z.string().uuid().nullable().optional(),
-});
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
+  locationAccuracyM: z.number().min(0).max(100000).nullable().optional(),
+}).refine(v=>(v.latitude==null&&v.longitude==null)||(v.latitude!=null&&v.longitude!=null),{message:'Latitude and longitude must be provided together'});
 
 export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json());
@@ -47,12 +50,15 @@ export async function POST(req: Request) {
     description: input.description,
     category: input.category,
     location_text: input.location,
+    latitude: input.latitude ?? null,
+    longitude: input.longitude ?? null,
+    location_accuracy_m: input.locationAccuracyM ?? null,
     budget_rwf: input.budgetRwf,
     due_at: input.dueAt,
     status: 'posted',
-  }).select('id,title,status,budget_rwf,location_text,due_at,created_at,business_id').single();
+  }).select('id,title,status,budget_rwf,location_text,latitude,longitude,due_at,created_at,business_id').single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  await supabase.from('task_events').insert({task_id:task.id,actor_id:userId,event_type:'task_posted',message:`${businessId?'Business task. ':''}Completion proof: ${input.proofRequirement}`});
+  await supabase.from('task_events').insert({task_id:task.id,actor_id:userId,event_type:'task_posted',message:`${businessId?'Business task. ':''}${input.latitude!=null?'Exact location pin attached. ':''}Completion proof: ${input.proofRequirement}`});
   return NextResponse.json({ ok: true, task }, { status: 201 });
 }
