@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { checkTaskSafety } from '@/lib/task-safety';
 
 const schema = z.object({
   title: z.string().min(5).max(160),
@@ -18,6 +19,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid task', details: parsed.error.flatten() }, { status: 400 });
   }
 
+  const input = parsed.data;
+  const safety = checkTaskSafety(input.title, input.description);
+  if (!safety.allowed) {
+    return NextResponse.json({ error: safety.reason, code: 'TASK_NOT_ALLOWED' }, { status: 422 });
+  }
+
+  const dueAt = new Date(input.dueAt);
+  if (!Number.isFinite(dueAt.getTime()) || dueAt.getTime() <= Date.now()) {
+    return NextResponse.json({ error: 'Choose a future task deadline' }, { status: 400 });
+  }
+
   const supabase = await createServerSupabaseClient();
   const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub;
@@ -33,7 +45,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Complete identity verification before posting a task', code: 'KYC_REQUIRED' }, { status: 403 });
   }
 
-  const input = parsed.data;
   const { data: task, error } = await supabase
     .from('tasks')
     .insert({
