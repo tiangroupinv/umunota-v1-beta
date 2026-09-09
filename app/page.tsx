@@ -1,88 +1,72 @@
 import Link from 'next/link';
 import LanguageMenu from '@/components/LanguageMenu';
-import {ArrowRight,BadgeCheck,CalendarClock,Clock3,CreditCard,FileCheck2,MapPin,PackageCheck,Printer,ShieldCheck,ShoppingBasket,UsersRound,WashingMachine,Wrench} from 'lucide-react';
+import {ArrowRight,BriefcaseBusiness,CheckCircle2,Clock3,MapPin,Play,ShieldCheck,Sparkles,UsersRound} from 'lucide-react';
 
-const services=[
- {icon:ShoppingBasket,title:'Market runs',body:'Groceries, household items and quick purchases.'},
- {icon:PackageCheck,title:'Pickup & delivery',body:'Documents, parcels and everyday errands.'},
- {icon:Wrench,title:'Repair errands',body:'Take phones, shoes, clothes or other items for repair and return.'},
- {icon:WashingMachine,title:'Laundry & cleaning',body:'Pickup, drop-off and trusted local help.'},
- {icon:Printer,title:'Print & collect',body:'Print documents and have them collected for you.'},
- {icon:Clock3,title:'Other safe local tasks',body:'Describe a safe, legal task and find help nearby.'},
-];
-
-const examples=[
- {title:'Buy groceries from Kimironko Market',category:'Market shopping',location:'Gasabo, Kigali',budget:'18,500 RWF',time:'Today · 18:30'},
- {title:'Collect printed documents and deliver them',category:'Documents',location:'Nyarugenge, Kigali',budget:'4,500 RWF',time:'Tomorrow · 09:00'},
- {title:'Take my phone to repair and return it',category:'Repair errand',location:'Kicukiro, Kigali',budget:'7,000 RWF',time:'Tomorrow · 15:00'},
+const audiences=[
+ {icon:UsersRound,title:'For Individuals',body:'Post everyday tasks and get support from trusted runners.'},
+ {icon:BriefcaseBusiness,title:'For Businesses',body:'Delegate local work and keep your team focused.'},
+ {icon:Clock3,title:'For Runners',body:'Find safe local tasks, earn fairly and build your reputation.'},
+ {icon:Sparkles,title:'For Communities',body:'Turn spare time into useful work and stronger local connections.'},
 ];
 
 const steps=[
- ['01','Verify','Complete the required identity checks before marketplace participation.'],
- ['02','Post','Describe the task, budget, area, deadline and completion requirement.'],
- ['03','Match','An eligible verified runner accepts the funded task.'],
- ['04','Complete','The runner finishes the work and submits the required evidence.'],
- ['05','Review','The customer approves the result or opens a dispute.'],
- ['06','Close','Payment confirmation and ratings complete the task history.'],
+ ['01','Post clearly','Describe the task, location area, budget, deadline and what completion should look like.'],
+ ['02','Match safely','Eligible verified runners can discover and accept work they can complete.'],
+ ['03','Track progress','Task status, evidence and important updates stay connected to one record.'],
+ ['04','Complete fairly','Review the result, confirm the outcome and build reputation through ratings.'],
 ];
 
-export default function Page(){return <main className="landingModern">
- <nav className="modernNav">
-  <Link href="/" className="modernLogo"><img src="/umunota-logo-approved.svg" alt="UMUNOTA — Tasks. People. A Better Tomorrow."/></Link>
-  <div className="modernNavLinks"><a href="#services">Services</a><a href="#examples">Examples</a><a href="#how">How it works</a><a href="#trust">Trust</a></div>
-  <div className="modernNavActions"><LanguageMenu/><Link href="/login" className="plainLink">Log in</Link><Link href="/signup" className="modernPrimary">Get started <ArrowRight size={16}/></Link></div>
- </nav>
+export default function Page(){return <main className="launchLanding">
+ <header className="launchNav">
+  <nav className="launchNavLinks" aria-label="Primary navigation">
+   <a className="active" href="#home">Home</a>
+   <a href="#how">How it works</a>
+   <a href="#business">For Businesses</a>
+   <a href="#runners">For Runners</a>
+   <a href="#about">About</a>
+  </nav>
+  <Link href="/" className="launchLogo" aria-label="UMUNOTA home"><img src="/umunota-logo-official.png" alt="UMUNOTA — Tasks. People. A Better Tomorrow."/></Link>
+  <div className="launchNavActions"><LanguageMenu/><Link href="/login" className="launchSignIn">Sign in</Link><Link href="/signup" className="launchPrimary">Get started</Link></div>
+ </header>
 
- <section className="modernHero">
-  <div className="modernHeroMain">
-   <span className="modernEyebrow">RWANDA'S LOCAL TASK MARKETPLACE</span>
-   <h1>Everyday help,<br/>without the everyday hassle.</h1>
-   <p>Post safe local tasks, connect with verified people nearby, follow progress and keep every important step tied to one clear record.</p>
-   <div className="modernHeroActions"><Link href="/signup" className="modernPrimary">Post a task <ArrowRight size={17}/></Link><Link href="/login" className="modernTextLink">Find tasks to do <ArrowRight size={17}/></Link></div>
+ <section id="home" className="launchHero">
+  <div className="launchHeroCopy">
+   <span className="launchEyebrow">RWANDA'S LOCAL TASK MARKETPLACE</span>
+   <h1>Everyday tasks.<br/><strong>Real opportunities.</strong></h1>
+   <p>UMUNOTA connects people who need safe everyday tasks done with people who can get them done — clearly, fairly and locally.</p>
+   <div className="launchHeroActions"><Link href="/signup" className="launchPrimary launchLarge">Get started <ArrowRight size={18}/></Link><a href="#how" className="launchSecondary"><Play size={17} fill="currentColor"/> How it works</a></div>
+   <div className="launchMiniValues"><span><b>People</b>Get things done</span><span><b>Businesses</b>Save time</span><span><b>Runners</b>Earn fairly</span><span><b>Communities</b>Grow together</span></div>
   </div>
-  <div className="modernHeroSide">
-   <div className="modernMetric"><b>01</b><span>Post what you need done</span></div>
-   <div className="modernMetric"><b>02</b><span>Match with a verified runner</span></div>
-   <div className="modernMetric"><b>03</b><span>Track completion and payment</span></div>
+  <div className="launchHeroVisual" aria-label="UMUNOTA connects people and everyday opportunities">
+   <div className="launchVisualBrand"><img src="/umunota-logo-official.png" alt=""/></div>
+   <div className="launchVisualStatement"><span>Small tasks.</span><strong>Bigger tomorrows.</strong></div>
+   <div className="launchVisualMap"><MapPin size={22}/><span>Kigali, Rwanda</span></div>
+   <div className="launchOrbit orbitOne"></div><div className="launchOrbit orbitTwo"></div>
   </div>
  </section>
 
- <section className="modernProofBar">
-  <span><BadgeCheck size={18}/> Verified marketplace access</span>
-  <span><ShieldCheck size={18}/> Server-checked task flow</span>
-  <span><CreditCard size={18}/> Task-linked payment records</span>
-  <span><FileCheck2 size={18}/> Completion evidence and ratings</span>
+ <section className="launchAudienceStrip">{audiences.map(({icon:Icon,title,body})=><article key={title}><Icon size={30}/><div><h2>{title}</h2><p>{body}</p></div></article>)}</section>
+
+ <section id="how" className="launchHow">
+  <div className="launchSectionLead"><span className="launchEyebrow">HOW IT WORKS</span><h2>Simple enough for one errand.<br/>Strong enough to build trust.</h2><p>UMUNOTA keeps the important parts of a task connected without turning everyday help into complicated professional freelancing.</p></div>
+  <div className="launchSteps">{steps.map(([n,title,body])=><article key={n}><b>{n}</b><div><h3>{title}</h3><p>{body}</p></div></article>)}</div>
  </section>
 
- <section id="services" className="modernSection">
-  <div className="modernSectionIntro"><span className="modernEyebrow">EVERYDAY HELP</span><h2>Useful work, not another complicated app category.</h2><p>UMUNOTA is built for practical tasks people already need help with every day.</p></div>
-  <div className="modernServiceList">{services.map(({icon:Icon,title,body},i)=><article key={title}><span className="serviceNumber">0{i+1}</span><Icon size={22}/><div><h3>{title}</h3><p>{body}</p></div></article>)}</div>
+ <section className="launchSplit" id="business">
+  <div className="launchSplitCopy"><span className="launchEyebrow">FOR BUSINESSES</span><h2>Delegate the small work that steals big chunks of time.</h2><p>Create a Business workspace for recurring errands, local pickups and operational tasks while keeping activity connected to your UMUNOTA account.</p><Link href="/business" className="launchTextLink">Explore UMUNOTA Business <ArrowRight size={18}/></Link></div>
+  <div className="launchPrinciples"><span><CheckCircle2/> Clear task ownership</span><span><CheckCircle2/> Team workspace support</span><span><CheckCircle2/> Recurring task templates</span><span><CheckCircle2/> Real marketplace records</span></div>
  </section>
 
- <section id="examples" className="modernSection modernExamples">
-  <div className="modernSectionIntro"><span className="modernEyebrow">EXAMPLE TASKS</span><h2>A task should be understandable before anyone accepts it.</h2><p>These are examples only, not live marketplace listings.</p></div>
-  <div className="modernTaskRows">{examples.map(t=><article key={t.title}><div className="taskLead"><span>{t.category}</span><h3>{t.title}</h3></div><div className="taskMeta"><span><MapPin size={15}/>{t.location}</span><span><CalendarClock size={15}/>{t.time}</span></div><strong>{t.budget}</strong><ArrowRight size={18}/></article>)}</div>
-  <div className="modernExampleNote">Real tasks are displayed according to account access and task visibility rules.</div>
+ <section className="launchSplit reverse" id="runners">
+  <div className="launchSplitCopy"><span className="launchEyebrow">FOR RUNNERS</span><h2>Turn available time into a reputation people can trust.</h2><p>Discover eligible tasks, complete them responsibly and build a history based on verified marketplace activity and ratings.</p><Link href="/signup" className="launchTextLink">Create a runner account <ArrowRight size={18}/></Link></div>
+  <div className="launchRunnerQuote"><ShieldCheck size={38}/><p>Verification is part of marketplace access. Uploading an ID alone does not make an account verified.</p></div>
  </section>
 
- <section id="how" className="modernSection modernHow">
-  <div className="modernSectionIntro"><span className="modernEyebrow">HOW IT WORKS</span><h2>One simple flow from request to completion.</h2></div>
-  <div className="modernTimeline">{steps.map(([n,title,body])=><article key={n}><b>{n}</b><div><h3>{title}</h3><p>{body}</p></div></article>)}</div>
+ <section id="about" className="launchAbout">
+  <div><span className="launchEyebrow">A BETTER TOMORROW</span><h2>Built around useful work, time and local opportunity.</h2></div>
+  <div><p>UMUNOTA is a project of Tian Group Innovation Ltd. The marketplace is focused on safe, legal everyday tasks and responsible participation.</p><div className="launchAboutLinks"><Link href="/legal">Legal & Safety</Link><Link href="/tian">Tian Group projects</Link><Link href="/community">Community</Link></div></div>
  </section>
 
- <section id="trust" className="modernTrust">
-  <div><span className="modernEyebrow">BUILT FOR TRUST</span><h2>Trust is part of the workflow, not decoration around it.</h2></div>
-  <div className="modernTrustCopy"><p>Identity checks, server-controlled task transitions, completion evidence, provider-confirmed payment state and ratings are connected to the same marketplace record.</p><p>Uploading a document alone does not make an account verified. Participation depends on the configured verification result and marketplace rules.</p><Link href="/signup" className="modernTextLink">Create your account <ArrowRight size={17}/></Link></div>
- </section>
-
- <section className="modernFinal">
-  <div><span className="modernEyebrow">START WITH ONE TASK</span><h2>What would you get done with another pair of hands?</h2></div>
-  <Link href="/signup" className="modernPrimary">Get started <ArrowRight size={17}/></Link>
- </section>
-
- <footer className="modernFooter">
-  <div><img src="/umunota-logo-approved.svg" alt="UMUNOTA"/><p>A project of Tian Group Innovation Ltd.</p></div>
-  <div><Link href="/login">Log in</Link><Link href="/signup">Create account</Link><Link href="/community">Community</Link><Link href="/legal">Legal & Safety</Link><Link href="/tian">Tian Group projects</Link></div>
-  <small>© 2026 Tian Group Innovation Ltd / UMUNOTA. Safe, legal everyday tasks only.</small>
- </footer>
-</main>}
+ <section className="launchFinal"><img src="/umunota-logo-official.png" alt="UMUNOTA"/><div><span className="launchEyebrow">START WITH ONE TASK</span><h2>What could you get done today?</h2></div><Link href="/signup" className="launchPrimary launchLarge">Get started <ArrowRight size={18}/></Link></section>
+ <footer className="launchFooter"><span>© 2026 Tian Group Innovation Ltd / UMUNOTA.</span><span>Safe, legal everyday tasks only.</span></footer>
+ </main>}
