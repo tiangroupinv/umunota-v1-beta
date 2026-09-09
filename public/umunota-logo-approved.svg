@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 300" role="img" aria-labelledby="title desc">
+<title id="title">UMUNOTA</title><desc id="desc">UMUNOTA approved gold stopwatch speedmark logo with tagline Tasks. People. A Better Tomorrow.</desc>
+<defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6c64f"/><stop offset=".55" stop-color="#d9a51f"/><stop offset="1" stop-color="#b77700"/></linearGradient></defs>
+<g fill="none" stroke="url(#gold)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+<path d="M34 116h112M54 150h82M34 184h112"/>
+<circle cx="204" cy="150" r="92"/>
+<path d="M204 58V30M181 30h46"/>
+<path d="M204 104v55l40 35"/>
+</g>
+<g fill="url(#gold)">
+<circle cx="204" cy="84" r="7"/><circle cx="251" cy="103" r="7"/><circle cx="270" cy="150" r="7"/><circle cx="251" cy="197" r="7"/><circle cx="204" cy="216" r="7"/><circle cx="157" cy="197" r="7"/><circle cx="138" cy="150" r="7"/><circle cx="157" cy="103" r="7"/>
+</g>
+<text x="326" y="171" font-family="Arial, Helvetica, sans-serif" font-size="112" font-weight="900" letter-spacing="-5" fill="url(#gold)">UMUNOTA</text>
+<circle cx="1042" cy="158" r="10" fill="url(#gold)"/>
+<text x="332" y="224" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="8" fill="url(#gold)">TASKS. PEOPLE. A BETTER TOMORROW.</text>
+</svg>
