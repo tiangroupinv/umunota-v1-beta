@@ -9,18 +9,9 @@ import './settings.css';
 import './brand.css';
 import './controls.css';
 import './landing.css';
+import './ux-improvements.css';
 import type {Metadata} from 'next';
 import Providers from './providers';
 import {LanguageProvider} from '@/components/LanguageProvider';
-
-export const metadata:Metadata={
-  title:'UMUNOTA — Tasks. People. A Better Tomorrow.',
-  description:'Verified everyday help marketplace in Rwanda — a Tian Group Innovation Ltd project.',
-  manifest:'/manifest.webmanifest',
-  themeColor:'#090a0c',
-  icons:{icon:'/umunota-icon.svg',apple:'/umunota-icon.svg'},
-};
-
-export default function RootLayout({children}:{children:React.ReactNode}){
-  return <html lang="en"><body><LanguageProvider><Providers>{children}</Providers></LanguageProvider></body></html>
-}
+export const metadata:Metadata={title:'UMUNOTA — Tasks. People. A Better Tomorrow.',description:'Verified everyday help marketplace in Rwanda — a Tian Group Innovation Ltd project.',manifest:'/manifest.webmanifest',themeColor:'#090a0c',icons:{icon:'/umunota-icon.svg',apple:'/umunota-icon.svg'}};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><LanguageProvider><Providers>{children}</Providers></LanguageProvider></body></html>}
