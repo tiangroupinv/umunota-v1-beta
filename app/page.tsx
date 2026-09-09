@@ -31,7 +31,7 @@ export default function Page(){return <main className="finLanding">
   </div>
 
   <div className="finWorkspaceWrap">
-   <div className="finWorkspaceLabel">UMUNOTA INTERFACE PREVIEW</div>
+   <div className="finWorkspaceLabel">UMUNOTA INTERFACE PREVIEW · EXAMPLE VALUES</div>
    <div className="finWorkspace">
     <aside className="finPreviewSide">
      <img src="/umunota-logo-official.png" alt=""/>
@@ -43,9 +43,9 @@ export default function Page(){return <main className="finLanding">
     </aside>
     <div className="finPreviewMain">
      <div className="finPreviewTop"><div><small>Welcome back</small><b>Your task workspace</b></div><div className="finPreviewAvatar">U</div></div>
-     <div className="finPreviewMetrics"><div><span>Active tasks</span><b>—</b><small>Live account records</small></div><div><span>Task value</span><b>RWF</b><small>Across active tasks</small></div><div><span>Identity</span><b>Verified</b><small>Marketplace access</small></div><div><span>Notifications</span><b>On</b><small>Task updates</small></div></div>
+     <div className="finPreviewMetrics"><div><span>Active tasks</span><b>2</b><small>Example preview</small></div><div><span>Task value</span><b>8,500 RWF</b><small>Example total</small></div><div><span>Identity</span><b>Verified</b><small>Marketplace access</small></div><div><span>Notifications</span><b>On</b><small>Task updates</small></div></div>
      <div className="finPreviewGrid">
-      <div className="finPreviewPanel"><div className="finPreviewPanelHead"><span>Recent activity</span><small>Preview</small></div><div className="finPreviewTask"><i></i><div><b>Task title appears here</b><small><MapPin size={11}/> Kigali · Status updates</small></div><strong>RWF</strong></div><div className="finPreviewTask"><i></i><div><b>Another task record</b><small><Clock3 size={11}/> Deadline and progress</small></div><strong>RWF</strong></div><div className="finPreviewChart"><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+      <div className="finPreviewPanel"><div className="finPreviewPanelHead"><span>Recent activity</span><small>Example prices</small></div><div className="finPreviewTask"><i></i><div><b>Market pickup</b><small><MapPin size={11}/> Kigali · In progress</small></div><strong>5,000 RWF</strong></div><div className="finPreviewTask"><i></i><div><b>Document collection</b><small><Clock3 size={11}/> Today · Posted</small></div><strong>3,500 RWF</strong></div><div className="finPreviewChart"><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
       <div className="finPreviewPanel small"><div className="finPreviewPanelHead"><span>Runner</span><small>Verified</small></div><div className="finRunnerPreview"><div className="finPreviewAvatar gold">R</div><div><b>Trusted runner</b><small>Rating · task history</small></div></div><button>View runner</button></div>
      </div>
     </div>
@@ -68,7 +68,7 @@ export default function Page(){return <main className="finLanding">
  </section>
 
  <section className="finSplit reverse" id="how">
-  <div className="finDevice finTaskComposer"><span className="finKicker">POST A TASK</span><label>What needs to be done?</label><div className="finInput">Describe the task clearly</div><div className="finComposerGrid"><div><small>Area</small><b>Kigali</b></div><div><small>Budget</small><b>RWF</b></div></div><div className="finInput muted">Deadline and completion requirement</div><button>Publish task</button></div>
+  <div className="finDevice finTaskComposer"><span className="finKicker">POST A TASK</span><label>What needs to be done?</label><div className="finInput">Describe the task clearly</div><div className="finComposerGrid"><div><small>Area</small><b>Kigali</b></div><div><small>Budget</small><b>5,000 RWF</b></div></div><div className="finInput muted">Deadline and completion requirement</div><button>Publish task</button></div>
   <div className="finSplitCopy"><span className="finKicker">HOW IT WORKS</span><h2>Take control of the <em>whole task journey.</em></h2><p>UMUNOTA keeps task creation, matching, progress, evidence, payment actions and ratings connected instead of scattering them across chats and informal agreements.</p><div className="finStats"><div><b>01</b><span>Post clearly</span></div><div><b>02</b><span>Match safely</span></div><div><b>03</b><span>Complete fairly</span></div></div><Link href="/signup" className="finPill finPillLight">Create account <ArrowRight size={15}/></Link></div>
  </section>
 
