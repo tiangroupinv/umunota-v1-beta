@@ -7,30 +7,30 @@ export async function POST() {
   const userId = claimsData?.claims?.sub;
   if (claimsError || !userId) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('kyc_status')
     .eq('id', userId)
     .single();
 
-  if (profile?.kyc_status === 'verified') {
+  if (profileError || !profile) {
+    return NextResponse.json({ error: 'Profile not found. Sign out and sign in again.' }, { status: 404 });
+  }
+
+  if (profile.kyc_status === 'verified') {
     return NextResponse.json({ ok: true, verified: true, redirect: '/kyc' });
   }
 
-  if (profile?.kyc_status === 'pending') {
+  if (profile.kyc_status === 'pending') {
     return NextResponse.json({ ok: true, pending: true });
   }
 
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      kyc_status: 'pending',
-      kyc_provider: 'manual',
-      kyc_session_id: null,
-    })
-    .eq('id', userId);
+  const { data: status, error } = await supabase.rpc('request_manual_verification');
 
-  if (error) return NextResponse.json({ error: 'Unable to submit verification request.' }, { status: 500 });
+  if (error) {
+    console.error('Manual verification request failed:', error.message);
+    return NextResponse.json({ error: 'Unable to submit verification request. Please try again.' }, { status: 500 });
+  }
 
-  return NextResponse.json({ ok: true, pending: true });
+  return NextResponse.json({ ok: true, pending: status === 'pending', verified: status === 'verified' });
 }
