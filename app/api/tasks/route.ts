@@ -9,6 +9,7 @@ const schema = z.object({
   budgetRwf: z.number().int().min(500),
   location: z.string().min(2).max(160),
   category: z.string().min(2).max(80),
+  startAt: z.string().datetime(),
   dueAt: z.string().datetime(),
   proofRequirement: z.string().min(2).max(120),
   businessId: z.string().uuid().nullable().optional(),
@@ -24,8 +25,10 @@ export async function POST(req: Request) {
   const safety = checkTaskSafety(input.title, input.description);
   if (!safety.allowed) return NextResponse.json({ error: safety.reason, code: 'TASK_NOT_ALLOWED' }, { status: 422 });
 
+  const startAt = new Date(input.startAt);
   const dueAt = new Date(input.dueAt);
-  if (!Number.isFinite(dueAt.getTime()) || dueAt.getTime() <= Date.now()) return NextResponse.json({ error: 'Choose a future task deadline' }, { status: 400 });
+  if (!Number.isFinite(startAt.getTime()) || startAt.getTime() <= Date.now()) return NextResponse.json({ error: 'Choose a future task start time' }, { status: 400 });
+  if (!Number.isFinite(dueAt.getTime()) || dueAt.getTime() <= startAt.getTime()) return NextResponse.json({ error: 'Task deadline must be after the start time' }, { status: 400 });
 
   const supabase = await createServerSupabaseClient();
   const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
@@ -51,15 +54,16 @@ export async function POST(req: Request) {
     category: input.category,
     location_text: input.location,
     budget_rwf: input.budgetRwf,
+    start_at: input.startAt,
     due_at: input.dueAt,
     status: 'posted',
-  }).select('id,title,status,budget_rwf,location_text,due_at,created_at,business_id').single();
+  }).select('id,title,status,budget_rwf,location_text,start_at,due_at,created_at,business_id').single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if(input.latitude!=null&&input.longitude!=null){
     const {error:locationError}=await supabase.from('task_locations').insert({task_id:task.id,latitude:input.latitude,longitude:input.longitude,accuracy_m:input.locationAccuracyM??null});
     if(locationError){await supabase.from('tasks').delete().eq('id',task.id);return NextResponse.json({error:'Unable to save exact task location.'},{status:400});}
   }
-  await supabase.from('task_events').insert({task_id:task.id,actor_id:userId,event_type:'task_posted',message:`${businessId?'Business task. ':''}${input.latitude!=null?'Protected exact location pin attached. ':''}Completion proof: ${input.proofRequirement}`});
+  await supabase.from('task_events').insert({task_id:task.id,actor_id:userId,event_type:'task_posted',message:`${businessId?'Business task. ':''}${input.latitude!=null?'Protected exact location pin attached. ':''}Scheduled ${input.startAt} to ${input.dueAt}. Completion proof: ${input.proofRequirement}`});
   return NextResponse.json({ ok: true, task }, { status: 201 });
 }
