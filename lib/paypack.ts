@@ -1,94 +1,12 @@
 const PAYPACK_BASE_URL = 'https://payments.paypack.rw/api';
 
-type PaypackAuthResponse = {
-  access: string;
-  refresh: string;
-  expires: string | number;
-};
-
-type PaypackTransaction = {
-  amount: number;
-  client?: string;
-  fee?: number;
-  kind: 'CASHIN' | 'CASHOUT';
-  merchant?: string;
-  provider?: 'mtn' | 'airtel' | string;
-  ref: string;
-  status: 'pending' | 'successful' | 'failed' | string;
-  timestamp?: string;
-  created_at?: string;
-};
-
-function credentials() {
-  const clientId = process.env.PAYPACK_CLIENT_ID;
-  const clientSecret = process.env.PAYPACK_CLIENT_SECRET;
-  if (!clientId || !clientSecret) {
-    throw new Error('Paypack credentials are not configured');
-  }
-  return { clientId, clientSecret };
-}
-
-export function isPaypackConfigured() {
-  return Boolean(process.env.PAYPACK_CLIENT_ID && process.env.PAYPACK_CLIENT_SECRET);
-}
-
-async function authorize() {
-  const { clientId, clientSecret } = credentials();
-  const response = await fetch(`${PAYPACK_BASE_URL}/auth/agents/authorize`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ client_id: clientId, client_secret: clientSecret }),
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    throw new Error(`Paypack authentication failed (${response.status})`);
-  }
-
-  return (await response.json()) as PaypackAuthResponse;
-}
-
-async function request<T>(path: string, init: RequestInit = {}) {
-  const auth = await authorize();
-  const response = await fetch(`${PAYPACK_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${auth.access}`,
-      'X-Webhook-Mode': process.env.PAYPACK_WEBHOOK_MODE || 'production',
-      ...(init.headers || {}),
-    },
-    cache: 'no-store',
-  });
-
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const message = typeof payload?.message === 'string' ? payload.message : `Paypack request failed (${response.status})`;
-    throw new Error(message);
-  }
-  return payload as T;
-}
-
-export async function paypackCashIn(input: { amount: number; phone: string; idempotencyKey?: string }) {
-  return request<PaypackTransaction>('/transactions/cashin', {
-    method: 'POST',
-    headers: input.idempotencyKey ? { 'Idempotency-Key': input.idempotencyKey.slice(0, 32) } : undefined,
-    body: JSON.stringify({ amount: input.amount, number: input.phone }),
-  });
-}
-
-export async function paypackCashOut(input: { amount: number; phone: string; idempotencyKey?: string }) {
-  return request<PaypackTransaction>('/transactions/cashout', {
-    method: 'POST',
-    headers: input.idempotencyKey ? { 'Idempotency-Key': input.idempotencyKey.slice(0, 32) } : undefined,
-    body: JSON.stringify({ amount: input.amount, number: input.phone }),
-  });
-}
-
-export async function paypackFindTransaction(ref: string) {
-  return request<PaypackTransaction>(`/transactions/find/${encodeURIComponent(ref)}`);
-}
+type PaypackAuthResponse = {access:string;refresh:string;expires:string|number};
+type PaypackTransaction = {amount:number;client?:string;fee?:number;kind:'CASHIN'|'CASHOUT';merchant?:string;provider?:'mtn'|'airtel'|string;ref:string;status:'pending'|'successful'|'failed'|string;timestamp?:string;created_at?:string};
+function credentials(){const clientId=process.env.PAYPACK_CLIENT_ID;const clientSecret=process.env.PAYPACK_CLIENT_SECRET;if(!clientId||!clientSecret)throw new Error('Paypack credentials are not configured');return{clientId,clientSecret}}
+export function isPaypackConfigured(){return Boolean(process.env.PAYPACK_CLIENT_ID&&process.env.PAYPACK_CLIENT_SECRET)}
+async function authorize(){const {clientId,clientSecret}=credentials();const response=await fetch(`${PAYPACK_BASE_URL}/auth/agents/authorize`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({client_id:clientId,client_secret:clientSecret}),cache:'no-store'});if(!response.ok)throw new Error(`Paypack authentication failed (${response.status})`);return(await response.json()) as PaypackAuthResponse}
+export async function paypackHealthcheck(){const auth=await authorize();return{ok:Boolean(auth.access),expires:auth.expires,mode:process.env.PAYPACK_WEBHOOK_MODE||'production'}}
+async function request<T>(path:string,init:RequestInit={}){const auth=await authorize();const response=await fetch(`${PAYPACK_BASE_URL}${path}`,{...init,headers:{Accept:'application/json','Content-Type':'application/json',Authorization:`Bearer ${auth.access}`,'X-Webhook-Mode':process.env.PAYPACK_WEBHOOK_MODE||'production',...(init.headers||{})},cache:'no-store'});const payload=await response.json().catch(()=>({}));if(!response.ok){const message=typeof payload?.message==='string'?payload.message:`Paypack request failed (${response.status})`;throw new Error(message)}return payload as T}
+export async function paypackCashIn(input:{amount:number;phone:string;idempotencyKey?:string}){return request<PaypackTransaction>('/transactions/cashin',{method:'POST',headers:input.idempotencyKey?{'Idempotency-Key':input.idempotencyKey.slice(0,32)}:undefined,body:JSON.stringify({amount:input.amount,number:input.phone})})}
+export async function paypackCashOut(input:{amount:number;phone:string;idempotencyKey?:string}){return request<PaypackTransaction>('/transactions/cashout',{method:'POST',headers:input.idempotencyKey?{'Idempotency-Key':input.idempotencyKey.slice(0,32)}:undefined,body:JSON.stringify({amount:input.amount,number:input.phone})})}
+export async function paypackFindTransaction(ref:string){return request<PaypackTransaction>(`/transactions/find/${encodeURIComponent(ref)}`)}
