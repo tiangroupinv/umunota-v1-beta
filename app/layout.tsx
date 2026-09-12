@@ -10,6 +10,7 @@ import './brand.css';
 import './controls.css';
 import './landing.css';
 import './ux-improvements.css';
+import './product-upgrades.css';
 import type {Metadata} from 'next';
 import Providers from './providers';
 import {LanguageProvider} from '@/components/LanguageProvider';
