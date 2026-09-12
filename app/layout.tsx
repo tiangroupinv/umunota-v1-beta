@@ -13,9 +13,10 @@ import './ux-improvements.css';
 import './product-upgrades.css';
 import './product-upgrades-2.css';
 import './product-upgrades-3.css';
-import type {Metadata} from 'next';
+import type {Metadata,Viewport} from 'next';
 import Providers from './providers';
 import {LanguageProvider} from '@/components/LanguageProvider';
 import PublicSiteBanner from '@/components/PublicSiteBanner';
-export const metadata:Metadata={title:'UMUNOTA — Tasks. People. A Better Tomorrow.',description:'Verified everyday help marketplace in Rwanda — a Tian Group Innovation Ltd project.',manifest:'/manifest.webmanifest',themeColor:'#090a0c',icons:{icon:'/umunota-icon.svg',apple:'/umunota-icon.svg'}};
+export const metadata:Metadata={title:'UMUNOTA — Tasks. People. A Better Tomorrow.',description:'Verified everyday help marketplace in Rwanda — a Tian Group Innovation Ltd project.',manifest:'/manifest.webmanifest',icons:{icon:'/umunota-icon.svg',apple:'/umunota-icon.svg'}};
+export const viewport:Viewport={themeColor:'#090a0c'};
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><LanguageProvider><Providers><PublicSiteBanner/>{children}</Providers></LanguageProvider></body></html>}
