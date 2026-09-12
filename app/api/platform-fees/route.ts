@@ -1,0 +1,2 @@
+import {NextResponse} from 'next/server';import {createAdminSupabaseClient} from '@/lib/supabase-admin';
+export async function GET(){try{const admin=createAdminSupabaseClient();const{data}=await admin.from('revenue_settings').select('task_fee_enabled,task_fee_percent').eq('id',1).single();return NextResponse.json({taskFeeEnabled:data?.task_fee_enabled===true,taskFeePercent:Number(data?.task_fee_percent||0)})}catch{return NextResponse.json({taskFeeEnabled:false,taskFeePercent:0})}}
