@@ -1,6 +1,3 @@
-import Link from 'next/link';
-import {Building2} from 'lucide-react';
-
-export default function AdminLayout({children}:{children:React.ReactNode}){
- return <><Link href="/admin/business" className="adminBusinessShortcut"><Building2 size={17}/> Business manager</Link>{children}</>;
-}
+import Link from 'next/link';import {BarChart3,Building2,ClipboardList,FileBarChart,LayoutDashboard,MessageSquareText,Settings,ShieldCheck,UsersRound,UserCog,WalletCards} from 'lucide-react';import {requireAdmin} from '@/lib/admin';import AdminLogoutButton from '@/components/AdminLogoutButton';
+const nav=[[LayoutDashboard,'Overview','/admin'],[UserCog,'Users','/admin/users'],[ShieldCheck,'KYC review','/admin/kyc'],[ClipboardList,'Tasks','/admin/tasks'],[UsersRound,'Runners','/admin/runners'],[WalletCards,'Payments','/admin/payments'],[BarChart3,'Revenue','/admin/revenue'],[Building2,'Business','/admin/business'],[MessageSquareText,'Community','/admin/community'],[FileBarChart,'Reports','/admin/reports'],[Settings,'Settings','/admin/settings']] as const;
+export default async function AdminLayout({children}:{children:React.ReactNode}){const{profile}=await requireAdmin();return <div className="adminWorkspace"><aside className="adminWorkspaceSide"><Link className="adminWorkspaceBrand" href="/admin"><img src="/umunota-logo-official.png" alt="UMUNOTA"/></Link><span>ADMIN CONTROL CENTER</span><nav className="adminWorkspaceNav">{nav.map(([Icon,label,href])=><Link href={href} key={href}><Icon size={16}/> {label}</Link>)}</nav><span>MARKETPLACE</span><nav className="adminWorkspaceNav"><Link href="/dashboard">User dashboard</Link><Link href="/tasks">Task view</Link><Link href="/community">Community view</Link></nav><div className="adminWorkspaceIdentity"><b>{profile.full_name||'Administrator'}</b><small>Administrator</small></div><AdminLogoutButton/></aside><main className="adminWorkspaceMain">{children}</main></div>}
