@@ -14,6 +14,7 @@ import './product-upgrades.css';
 import './product-upgrades-2.css';
 import './product-upgrades-3.css';
 import './component-polish.css';
+import './design-system.css';
 import type {Metadata,Viewport} from 'next';
 import Providers from './providers';
 import {LanguageProvider} from '@/components/LanguageProvider';
