@@ -15,5 +15,6 @@ import './product-upgrades-2.css';
 import type {Metadata} from 'next';
 import Providers from './providers';
 import {LanguageProvider} from '@/components/LanguageProvider';
+import PublicSiteBanner from '@/components/PublicSiteBanner';
 export const metadata:Metadata={title:'UMUNOTA — Tasks. People. A Better Tomorrow.',description:'Verified everyday help marketplace in Rwanda — a Tian Group Innovation Ltd project.',manifest:'/manifest.webmanifest',themeColor:'#090a0c',icons:{icon:'/umunota-icon.svg',apple:'/umunota-icon.svg'}};
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><LanguageProvider><Providers>{children}</Providers></LanguageProvider></body></html>}
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><LanguageProvider><Providers><PublicSiteBanner/>{children}</Providers></LanguageProvider></body></html>}
