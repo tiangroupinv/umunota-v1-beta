@@ -4,13 +4,15 @@ import {createServerSupabaseClient} from '@/lib/supabase-server';
 import {createAdminSupabaseClient} from '@/lib/supabase-admin';
 import {checkTaskSafety} from '@/lib/task-safety';
 
+const safeCategories=['Business operations','Inventory & stock support','Packing & moving support','Event staffing','Document processing','Data entry','Retail support','Site support — non-hazardous','Cleaning & organization','Other safe business work'] as const;
 const milestone=z.object({title:z.string().min(3).max(120),description:z.string().max(1000).optional().default(''),location:z.string().min(2).max(160),startAt:z.string().datetime(),dueAt:z.string().datetime(),payPerRunnerRwf:z.number().int().min(500)});
-const schema=z.object({businessId:z.string().uuid(),title:z.string().min(5).max(160),description:z.string().min(10).max(4000),category:z.string().min(2).max(80),location:z.string().min(2).max(160),runnersNeeded:z.number().int().min(2).max(100),startAt:z.string().datetime(),dueAt:z.string().datetime(),latitude:z.number().min(-90).max(90).nullable().optional(),longitude:z.number().min(-180).max(180).nullable().optional(),locationAccuracyM:z.number().min(0).max(100000).nullable().optional(),milestones:z.array(milestone).min(1).max(24)}).refine(v=>(v.latitude==null&&v.longitude==null)||(v.latitude!=null&&v.longitude!=null),{message:'Latitude and longitude must be provided together'});
+const schema=z.object({businessId:z.string().uuid(),title:z.string().min(5).max(160),description:z.string().min(10).max(4000),category:z.enum(safeCategories),location:z.string().min(2).max(160),runnersNeeded:z.number().int().min(2).max(100),startAt:z.string().datetime(),dueAt:z.string().datetime(),latitude:z.number().min(-90).max(90).nullable().optional(),longitude:z.number().min(-180).max(180).nullable().optional(),locationAccuracyM:z.number().min(0).max(100000).nullable().optional(),milestones:z.array(milestone).min(1).max(24)}).refine(v=>(v.latitude==null&&v.longitude==null)||(v.latitude!=null&&v.longitude!=null),{message:'Latitude and longitude must be provided together'});
 
 export async function POST(req:Request){
  try{
   const parsed=schema.safeParse(await req.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:'Check the project details and timeline.',details:parsed.error.flatten()},{status:400});const i=parsed.data;
   const safety=checkTaskSafety(i.title,i.description);if(!safety.allowed)return NextResponse.json({error:safety.reason,code:'TASK_NOT_ALLOWED'},{status:422});
+  for(const m of i.milestones){const stageSafety=checkTaskSafety(m.title,m.description||'');if(!stageSafety.allowed)return NextResponse.json({error:stageSafety.reason,code:'TASK_NOT_ALLOWED'},{status:422})}
   const start=new Date(i.startAt),due=new Date(i.dueAt);if(start.getTime()<=Date.now()||due.getTime()<=start.getTime())return NextResponse.json({error:'Project dates are invalid.'},{status:400});
   for(const [n,m] of i.milestones.entries()){const ms=new Date(m.startAt),md=new Date(m.dueAt);if(ms<start||md>due||md<=ms)return NextResponse.json({error:`Timeline stage ${n+1} must stay inside the project dates.`},{status:400})}
   const supabase=await createServerSupabaseClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return NextResponse.json({error:'Sign in required'},{status:401});
