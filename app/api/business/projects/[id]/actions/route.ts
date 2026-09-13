@@ -1,0 +1,64 @@
+import {NextResponse} from 'next/server';
+import {z} from 'zod';
+import {createServerSupabaseClient} from '@/lib/supabase-server';
+import {createAdminSupabaseClient} from '@/lib/supabase-admin';
+import {notifyUser} from '@/lib/notifications';
+
+const schema=z.object({action:z.enum(['apply','withdraw','accept_runner','reject_runner','activate_milestone','start_milestone','submit_milestone','approve_runner_milestone','reject_runner_milestone']),applicationId:z.string().uuid().optional(),milestoneId:z.string().uuid().optional(),runnerId:z.string().uuid().optional(),message:z.string().max(600).optional()});
+
+export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
+ try{
+  const {id}=await params;const parsed=schema.safeParse(await req.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:'Invalid project action.'},{status:400});const input=parsed.data;
+  const supabase=await createServerSupabaseClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return NextResponse.json({error:'Sign in required'},{status:401});
+  const {data:task}=await supabase.from('tasks').select('id,business_id,title,status,task_mode,runners_needed').eq('id',id).single();if(!task||task.task_mode!=='business_multi')return NextResponse.json({error:'Business project not found.'},{status:404});
+  const admin=createAdminSupabaseClient();const {data:profile}=await supabase.from('profiles').select('kyc_status,runner_mode_enabled').eq('id',user.id).single();const {data:membership}=task.business_id?await supabase.from('business_members').select('role').eq('business_id',task.business_id).eq('user_id',user.id).maybeSingle():{data:null};const manager=Boolean(membership&&['owner','manager'].includes(membership.role));
+
+  if(input.action==='apply'){
+   if(profile?.kyc_status!=='verified'||profile?.runner_mode_enabled!==true)return NextResponse.json({error:'Verified Runner Mode is required before applying.',code:'RUNNER_REQUIRED'},{status:403});
+   if(task.status!=='funded')return NextResponse.json({error:'This project is not open for runner applications.'},{status:409});
+   const {count}=await admin.from('business_task_applications').select('id',{head:true,count:'exact'}).eq('task_id',id).eq('status','accepted');if((count||0)>=task.runners_needed)return NextResponse.json({error:'All runner positions are already filled.'},{status:409});
+   const {data,error}=await supabase.from('business_task_applications').upsert({task_id:id,runner_id:user.id,status:'pending',message:input.message||null,updated_at:new Date().toISOString()},{onConflict:'task_id,runner_id'}).select('*').single();if(error)return NextResponse.json({error:error.message},{status:400});
+   await admin.from('task_events').insert({task_id:id,actor_id:user.id,event_type:'business_runner_applied',message:'A runner applied for a Business project position.'});
+   return NextResponse.json({ok:true,application:data});
+  }
+  if(input.action==='withdraw'){
+   const {error}=await supabase.from('business_task_applications').update({status:'withdrawn',updated_at:new Date().toISOString()}).eq('task_id',id).eq('runner_id',user.id).eq('status','pending');if(error)return NextResponse.json({error:error.message},{status:400});return NextResponse.json({ok:true});
+  }
+  if(input.action==='accept_runner'){
+   if(!manager||!input.applicationId)return NextResponse.json({error:'Only a Business owner or manager can accept runners.'},{status:403});
+   const {data:app}=await admin.from('business_task_applications').select('runner_id').eq('id',input.applicationId).eq('task_id',id).single();if(!app)return NextResponse.json({error:'Runner application not found.'},{status:404});
+   const {data,error}=await supabase.rpc('accept_business_runner_application',{p_application_id:input.applicationId});if(error)return NextResponse.json({error:error.message},{status:409});
+   await admin.from('task_events').insert({task_id:id,actor_id:user.id,event_type:'business_runner_accepted',message:'Business accepted a runner into the project team.'});
+   await notifyUser(app.runner_id,{type:'business_runner_accepted',title:'Business project request accepted',body:`${task.title}: you joined the project team.`,href:`/business/tasks/${id}`,category:'task'}).catch(()=>undefined);
+   return NextResponse.json({ok:true,result:data});
+  }
+  if(input.action==='reject_runner'){
+   if(!manager||!input.applicationId)return NextResponse.json({error:'Only a Business owner or manager can reject runners.'},{status:403});const {error}=await admin.from('business_task_applications').update({status:'rejected',reviewed_at:new Date().toISOString(),reviewed_by:user.id,updated_at:new Date().toISOString()}).eq('id',input.applicationId).eq('task_id',id).eq('status','pending');if(error)return NextResponse.json({error:error.message},{status:400});return NextResponse.json({ok:true});
+  }
+  if(!input.milestoneId)return NextResponse.json({error:'Timeline stage is required.'},{status:400});
+  const {data:milestone}=await admin.from('business_task_milestones').select('*').eq('id',input.milestoneId).eq('task_id',id).single();if(!milestone)return NextResponse.json({error:'Timeline stage not found.'},{status:404});
+  if(input.action==='activate_milestone'){
+   if(!manager)return NextResponse.json({error:'Only a Business owner or manager can activate timeline stages.'},{status:403});
+   const {error}=await admin.from('business_task_milestones').update({status:'active',updated_at:new Date().toISOString()}).eq('id',milestone.id);if(error)return NextResponse.json({error:error.message},{status:400});await admin.from('task_events').insert({task_id:id,actor_id:user.id,event_type:'business_milestone_active',message:`Timeline stage activated: ${milestone.title}`});return NextResponse.json({ok:true});
+  }
+  const targetRunner=input.runnerId||user.id;const {data:accepted}=await admin.from('business_task_applications').select('id').eq('task_id',id).eq('runner_id',targetRunner).eq('status','accepted').maybeSingle();if(!accepted)return NextResponse.json({error:'Runner is not an accepted member of this project.'},{status:403});
+  if(input.action==='start_milestone'){
+   if(targetRunner!==user.id||milestone.status!=='active')return NextResponse.json({error:'This stage is not ready to start.'},{status:403});
+   const {error}=await admin.from('business_runner_progress').upsert({task_id:id,runner_id:user.id,milestone_id:milestone.id,status:'active',started_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:'task_id,runner_id,milestone_id'});if(error)return NextResponse.json({error:error.message},{status:400});return NextResponse.json({ok:true});
+  }
+  if(input.action==='submit_milestone'){
+   if(targetRunner!==user.id)return NextResponse.json({error:'You can submit only your own project progress.'},{status:403});
+   const {error}=await admin.from('business_runner_progress').upsert({task_id:id,runner_id:user.id,milestone_id:milestone.id,status:'submitted',note:input.message||null,submitted_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:'task_id,runner_id,milestone_id'});if(error)return NextResponse.json({error:error.message},{status:400});await notifyUser(task.customer_id??'',{type:'business_milestone_submitted',title:'Runner progress submitted',body:`${task.title}: ${milestone.title} is ready for review.`,href:`/business/tasks/${id}`,category:'task'}).catch(()=>undefined);return NextResponse.json({ok:true});
+  }
+  if(!manager||!input.runnerId)return NextResponse.json({error:'Only a Business owner or manager can review runner progress.'},{status:403});
+  if(input.action==='reject_runner_milestone'){
+   const {error}=await admin.from('business_runner_progress').update({status:'rejected',note:input.message||'Changes requested',updated_at:new Date().toISOString()}).eq('task_id',id).eq('runner_id',input.runnerId).eq('milestone_id',milestone.id);if(error)return NextResponse.json({error:error.message},{status:400});return NextResponse.json({ok:true});
+  }
+  const {data:progress}=await admin.from('business_runner_progress').select('id,status').eq('task_id',id).eq('runner_id',input.runnerId).eq('milestone_id',milestone.id).single();if(!progress||progress.status!=='submitted')return NextResponse.json({error:'Runner must submit this stage before payment can be approved.'},{status:409});
+  await admin.from('business_runner_progress').update({status:'approved',approved_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',progress.id);
+  const {data:earning,error}=await admin.from('business_runner_earnings').upsert({task_id:id,runner_id:input.runnerId,milestone_id:milestone.id,amount_rwf:milestone.pay_per_runner_rwf,status:'approved',approved_by:user.id,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:'task_id,runner_id,milestone_id'}).select('*').single();if(error)return NextResponse.json({error:error.message},{status:400});
+  await notifyUser(input.runnerId,{type:'business_payment_approved',title:'Project payment approved',body:`${task.title}: ${milestone.title} payment is ready to withdraw.`,href:'/payments',category:'payment'}).catch(()=>undefined);
+  const {count:acceptedCount}=await admin.from('business_task_applications').select('id',{head:true,count:'exact'}).eq('task_id',id).eq('status','accepted');const {count:approvedCount}=await admin.from('business_runner_progress').select('id',{head:true,count:'exact'}).eq('task_id',id).eq('milestone_id',milestone.id).eq('status','approved');if((acceptedCount||0)>0&&(approvedCount||0)>=(acceptedCount||0))await admin.from('business_task_milestones').update({status:'completed',updated_at:new Date().toISOString()}).eq('id',milestone.id);
+  return NextResponse.json({ok:true,earning});
+ }catch(error){console.error('Business project action failed',error);return NextResponse.json({error:'Project action failed. Please try again.'},{status:500})}
+}
