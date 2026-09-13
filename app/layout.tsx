@@ -4,6 +4,7 @@ import './production.css';
 import './launch.css';
 import './business.css';
 import './business-upgrades.css';
+import './business-projects.css';
 import './community.css';
 import './platform.css';
 import './settings.css';
