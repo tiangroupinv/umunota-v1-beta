@@ -24,7 +24,7 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
   if(action==='request'){
     if(task.customer_id===user.id)return NextResponse.json({error:'You cannot request your own task'},{status:400});
     if(profile.runner_mode_enabled!==true)return NextResponse.json({error:'Enable runner mode before requesting tasks.'},{status:403});
-    if(task.status!=='funded'||task.runner_id)return NextResponse.json({error:'This task is not available for requests.'},{status:409});
+    if(!['posted','funded'].includes(task.status)||task.runner_id)return NextResponse.json({error:'This task is not available for requests.'},{status:409});
     const {data:existing}=await supabase.from('task_requests').select('id,status').eq('task_id',id).eq('runner_id',user.id).maybeSingle();
     if(existing?.status==='pending')return NextResponse.json({ok:true,request:existing,alreadyRequested:true});
     const {data:requestRow,error}=await supabase.from('task_requests').upsert({task_id:id,runner_id:user.id,status:'pending',updated_at:new Date().toISOString()},{onConflict:'task_id,runner_id'}).select('id,status').single();
@@ -36,6 +36,7 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
 
   if(action==='accept_request'){
     if(task.customer_id!==user.id)return NextResponse.json({error:'Only the customer can choose the runner.'},{status:403});
+    if(task.status!=='funded')return NextResponse.json({error:'Fund the task before approving a runner.'},{status:409});
     if(!parsed.data.requestId)return NextResponse.json({error:'Runner request is required.'},{status:400});
     const {data:requestRow,error:requestError}=await supabase.from('task_requests').select('id,runner_id,status').eq('id',parsed.data.requestId).eq('task_id',id).single();
     if(requestError||!requestRow)return NextResponse.json({error:'Runner request not found.'},{status:404});
