@@ -14,6 +14,10 @@ async function context(businessId:string){
  return {user,membership,supabase};
 }
 
+export async function GET(req:Request){
+ try{const businessId=new URL(req.url).searchParams.get('businessId')||'';if(!businessId)return NextResponse.json({error:'Business id required'},{status:400});const c=await context(businessId);if(c.error)return c.error;const admin=createAdminSupabaseClient();const {data:members,error}=await admin.from('business_members').select('id,business_id,user_id,role,created_at').eq('business_id',businessId).order('created_at',{ascending:true});if(error)return NextResponse.json({error:'Unable to load team members.'},{status:400});const ids=(members||[]).map(m=>m.user_id);const {data:profiles}=ids.length?await admin.from('profiles').select('id,full_name,username,avatar_url,kyc_status').in('id',ids):{data:[]};return NextResponse.json({members:members||[],profiles:profiles||[],viewerRole:c.membership!.role});
+ }catch(error){console.error('Business member list failed',error);return NextResponse.json({error:'Unable to load team members.'},{status:500})}}
+
 export async function POST(req:Request){
  try{const parsed=addSchema.safeParse(await req.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:'Invalid member request'},{status:400});const c=await context(parsed.data.businessId);if(c.error)return c.error;
   if(!['owner','manager'].includes(c.membership!.role))return NextResponse.json({error:'Only owners and managers can add team members.'},{status:403});
