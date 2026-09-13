@@ -3,6 +3,7 @@ import './marketing-admin.css';
 import './production.css';
 import './launch.css';
 import './business.css';
+import './business-upgrades.css';
 import './community.css';
 import './platform.css';
 import './settings.css';
