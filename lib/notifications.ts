@@ -1,7 +1,7 @@
 import * as webpush from 'web-push';
 import {createAdminSupabaseClient} from './supabase-admin';
 
-type Category='task'|'community'|'general';
+type Category='task'|'community'|'payment'|'general';
 
 function escapeHtml(value:string){return value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]||c))}
 
@@ -17,7 +17,7 @@ async function sendOperationalEmail(admin:ReturnType<typeof createAdminSupabaseC
 export async function notifyUser(userId:string,{type='general',title,body,href,category='general'}:{type?:string;title:string;body:string;href?:string;category?:Category}){
  const admin=createAdminSupabaseClient();
  const {data:pref}=await admin.from('user_preferences').select('push_notifications_enabled,task_notifications_enabled,community_notifications_enabled').eq('user_id',userId).maybeSingle();
- const categoryEnabled=category==='task'?pref?.task_notifications_enabled!==false:category==='community'?pref?.community_notifications_enabled!==false:true;
+ const categoryEnabled=category==='task'||category==='payment'?pref?.task_notifications_enabled!==false:category==='community'?pref?.community_notifications_enabled!==false:true;
  await admin.from('notifications').insert({user_id:userId,type,title,body,href:href||null});
  if(!categoryEnabled)return;
  await sendOperationalEmail(admin,userId,{title,body,href}).catch(()=>undefined);
