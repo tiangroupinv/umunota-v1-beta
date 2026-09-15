@@ -14,7 +14,9 @@ export async function reviewBusinessRequest(formData:FormData){
  const {error:businessError}=await admin.from('business_plans').update(businessPatch).eq('id',businessId);if(businessError)throw new Error(businessError.message);
  const {error:subError}=await admin.from('business_subscriptions').update({approval_status:decision,reviewed_by:profile.id,reviewed_at:now.toISOString(),review_notes:notes,updated_at:now.toISOString()}).eq('id',subscription.id);if(subError)throw new Error(subError.message);
  if(decision==='approved')await admin.from('revenue_entries').insert({source:'business_subscription',amount_rwf:subscription.amount_rwf,description:'UMUNOTA Business subscription',reference:subscription.id,status:'recorded'});
- await admin.from('notifications').insert({user_id:subscription.owner_user_id,type:'business_review',title:decision==='approved'?'Business workspace approved':'Business request needs changes',body:decision==='approved'?'Your UMUNOTA Business workspace is active.':'Your Business request was not approved. Review the request status for details.',href:'/business',category:'general'}).catch(()=>undefined);
+ // Notifications are best-effort: a notification failure must not roll back a completed admin review.
+ const {error:notificationError}=await admin.from('notifications').insert({user_id:subscription.owner_user_id,type:'business_review',title:decision==='approved'?'Business workspace approved':'Business request needs changes',body:decision==='approved'?'Your UMUNOTA Business workspace is active.':'Your Business request was not approved. Review the request status for details.',href:'/business',category:'general'});
+ if(notificationError)console.error('Business review notification failed:',notificationError.message);
  revalidatePath('/admin/business');revalidatePath('/business');
 }
 
